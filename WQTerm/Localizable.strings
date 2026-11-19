@@ -1,0 +1,31 @@
+/* WQTerm - Tiếng Việt (vi) */
+
+/* Onboarding */
+"onboarding.title" = "WQTerm — Cảnh bảo mật";
+"onboarding.body" = "WQTerm đọc/ghi được dữ liệu của các ứng dụng khác trên thiết bị. Chỉ dùng trên thiết bị cá nhân hoặc có sự cho phép bằng văn bản. Truy cập dữ liệu người khác có thể vi phạm Điều 289 Bộ luật Hình sự 2015.";
+"onboarding.apple" = "Apple có thể vá worse_query bất kỳ lúc nào — đóng băng iOS ở phiên bản hỗ trợ.";
+"onboarding.agree" = "Tôi đồng ý và tiếp tục";
+
+/* Tabs */
+"tab.terminal" = "Terminal";
+"tab.sandbox" = "Sandbox";
+"tab.backup" = "Backup";
+"tab.ai" = "AI";
+"tab.settings" = "Cài đặt";
+
+/* Security */
+"security.faceid" = "Khóa WQTerm bằng Face ID";
+"security.safemode" = "Chỉ đọc (SafeMode)";
+"security.panic" = "Nút panics: xóa dữ liệu";
+"security.sensitive" = "Ứng dụng nhạy cảm";
+
+/* Backup */
+"backup.writeahead" = "Backup write-ahead";
+"backup.restore" = "Phục hồi";
+"backup.confirm" = "Xác nhận lần 2";
+
+/* Worse query status */
+"status.full" = "Hỗ trợ đầy đủ";
+"status.partial" = "Chế độ hạn chế";
+"status.patched" = "Đã vá worse_query";
+"status.unknown" = "Không xác định";

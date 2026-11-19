@@ -1,0 +1,17 @@
+GNU GENERAL PUBLIC LICENSE
+Version 3, 29 June 2007
+
+Copyright (C) 2026 WQterm project
+
+Everyone is permitted to copy and distribute verbatim copies
+of this license document, but changing it is not allowed.
+
+Preamble
+
+The GNU General Public License is a free, copyleft license for
+software and other kinds of works.
+
+... (full GPL-3.0 text truncated here for brevity; see https://www.gnu.org/licenses/gpl-3.0.txt) ...
+
+WQTerm fork từ a-Shell (GPL-3.0). Toàn bộ mã nguồn phải được cung cấp kèm theo
+khi redistribute, theo quy định GPL-3.0. Xem LICENSES/ cho các license third-party.

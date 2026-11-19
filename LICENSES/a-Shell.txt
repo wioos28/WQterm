@@ -1,0 +1,5 @@
+a-Shell / ios_system
+License: BSD-3-Clause (ios_system) + GPL-3.0 (a-Shell)
+Source: https://github.com/holzschu/a-shell
+https://github.com/holzschu/ios_system
+Ghi chú: Fork phải giữ GPL-3.0.

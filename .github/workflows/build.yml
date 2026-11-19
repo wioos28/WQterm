@@ -1,0 +1,60 @@
+name: Build WQTerm IPA
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Xcode
+        run: |
+          sudo xcode-select -switch /Applications/Xcode.app
+          xcodebuild -version
+
+      - name: Build archive (unsigned)
+        run: |
+          xcodebuild \
+            -project WQTerm.xcodeproj \
+            -scheme WQTerm \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination generic/platform=iOS \
+            -archivePath build/WQTerm.xcarchive \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            ONLY_ACTIVE_ARCH=NO \
+            archive
+
+      - name: Package IPA
+        run: |
+          mkdir -p build/Payload
+          cp -R build/WQTerm.xcarchive/Products/Applications/WQTerm.app build/Payload/
+          cd build && zip -r WQTerm.ipa Payload
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: WQTerm-ipa
+          path: build/WQTerm.ipa
+
+      - name: Create Release
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: WQTerm v${{ github.run_number }}
+          body_path: .github/release-notes.md
+          files: build/WQTerm.ipa
+          draft: false
+          prerelease: false

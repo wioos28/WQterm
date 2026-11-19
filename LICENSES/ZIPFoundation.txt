@@ -1,0 +1,4 @@
+ZIPFoundation
+License: MIT
+Source: https://github.com/weichsel/ZIPFoundation
+Ghi chú: Dùng cho ZIP browser.

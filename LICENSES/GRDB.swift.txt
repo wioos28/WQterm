@@ -1,0 +1,4 @@
+GRDB.swift
+License: MIT
+Source: https://github.com/groue/GRDB.swift
+Ghi chú: Dùng cho SQLite viewer.

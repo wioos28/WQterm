@@ -1,0 +1,4 @@
+Node.js
+License: MIT
+Source: https://nodejs.org/
+Ghi chú: Nhúng runtime Node.js arm64 Darwin vào Resources/node-ios-arm64/ (tự build từ source, xem README).
