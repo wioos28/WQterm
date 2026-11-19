@@ -1,28 +1,37 @@
 import SwiftUI
+import UIKit
 
 @main
 struct WQTermApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @StateObject private var compatibility = IOSCompatibility.shared
     @StateObject private var security = SecurityManager.shared
-    @State private var showOnboarding = false
 
     var body: some Scene {
         WindowGroup {
             Group {
                 if security.isLocked {
-                    LockView()
+                    LockPlaceholderView()
                 } else if !OnboardingStorage.hasAgreed {
-                    OnboardingView { showOnboarding = false }
+                    OnboardingView { OnboardingStorage.markAgreed() }
                 } else {
                     ZStack {
                         TabView {
                             TerminalView()
                                 .tabItem { Label("Terminal", systemImage: "terminal") }
-                            Text("Sandbox (M2)").tabItem { Label("Sandbox", systemImage: "externaldrive") }
-                            Text("Backup (M3)").tabItem { Label("Backup", systemImage: "externaldrive") }
-                            Text("AI (M4/M9)").tabItem { Label("AI", systemImage: "sparkles") }
-                            Text("Cài đặt (M6)").tabItem { Label("Cài đặt", systemImage: "gear") }
+                            Text("Sandbox (M2)")
+                                .tabItem { Label("Sandbox", systemImage: "externaldrive") }
+                            Text("Backup (M3)")
+                                .tabItem { Label("Backup", systemImage: "externaldrive") }
+                            Text("AI (M4/M9)")
+                                .tabItem { Label("AI", systemImage: "sparkles") }
+                            Text("Cài đặt (M6)")
+                                .tabItem { Label("Cài đặt", systemImage: "gear") }
                         }
+                        WarningBanner(message: compatibility.bannerMessage,
+                                      type: compatibility.isRestrictedMode ? .restricted : .warning)
+                        .padding(.top, 8)
+                        .frame(maxHeight: .infinity, alignment: .top)
                         // Nút feedback nổi ở góc phải dưới màn hình
                         VStack {
                             Spacer()
@@ -57,7 +66,22 @@ enum OnboardingStorage {
     }
 }
 
-// MARK: - Onboarding view (chưa có file riêng, giữ tạm ở đây)
+// MARK: - Placeholder views (tạm thời cho các module chưa build UI chi tiết)
+
+struct LockPlaceholderView: View {
+    var body: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "lock.fill")
+                .font(.system(size: 60))
+                .foregroundColor(.secondary)
+            Text("WQTerm đang bị khóa")
+                .font(.headline)
+            Text("Vui lòng xác thực Face ID để mở khóa ứng dụng.")
+                .foregroundColor(.secondary)
+        }
+        .padding()
+    }
+}
 
 struct OnboardingView: View {
     let onAgree: () -> Void

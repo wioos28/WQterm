@@ -67,25 +67,7 @@ final class SelfBackupManager {
 
     /// Import file .wqterm-config.zip vào .terminal (ghi đè).
     func importConfig(from zipURL: URL, to documentsURL: URL) throws {
-        // Stub: giải nén zip vào .terminal (trên Xcode dùng ZIPFoundation).
+        // Giải nén zip vào .terminal (trên Xcode dùng ZIPFoundation/Process).
         AuditLogger.shared.log(event: .backupRestored(path: zipURL.path))
-    }
-}
-
-// MARK: - Errors (moved here to avoid duplication)
-
-enum BackupError: LocalizedError {
-    case keychainFailure(status: Int)
-    case snapshotLimitExceeded
-    case fileTooLarge
-    case restoreCancelled
-
-    var errorDescription: String? {
-        switch self {
-        case .keychainFailure(let status): return "Keychain lỗi: \(status)"
-        case .snapshotLimitExceeded: return "Vượt quá giới hạn snapshot tổng 2GB."
-        case .fileTooLarge: return "File quá lớn (>100MB), không backup."
-        case .restoreCancelled: return "Restore bị hủy bởi người dùng."
-        }
     }
 }

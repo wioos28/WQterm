@@ -13,13 +13,34 @@ final class ContainerArchiver {
         try fileManager.createDirectory(at: destination.deletingLastPathComponent(),
                                         withIntermediateDirectories: true, attributes: nil)
 
-        // Stub: trên Xcode thực tế sẽ dùng Process gọi tar hoặc ZIPFoundation.
-        let placeholder = Data("WQTerm container archive stub for \(containerURL.path)".utf8)
-        try placeholder.write(to: destination, options: .atomic)
-        progress?(1.0)
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/tar")
+        process.arguments = ["-czf", destination.path, "-C", containerURL.deletingLastPathComponent().path, containerURL.lastPathComponent]
+        process.currentDirectoryURL = containerURL.deletingLastPathComponent()
 
-        AuditLogger.shared.log(event: .backupCreated(path: destination.path))
-        return destination
+        let errorPipe = Pipe()
+        process.standardError = errorPipe
+
+        do {
+            try process.run()
+            process.waitUntilExit()
+
+            if process.terminationStatus == 0 {
+                progress?(1.0)
+                AuditLogger.shared.log(event: .backupCreated(path: destination.path))
+                return destination
+            } else {
+                let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+                let errorMsg = String(data: errorData, encoding: .utf8) ?? "Lỗi nén tar.gz không xác định (mã \(process.terminationStatus))"
+                throw NSError(domain: "WQTerm.ContainerArchiver", code: Int(process.terminationStatus),
+                              userInfo: [NSLocalizedDescriptionKey: errorMsg])
+            }
+        } catch let error as NSError {
+            throw error
+        } catch {
+            throw NSError(domain: "WQTerm.ContainerArchiver", code: -1,
+                          userInfo: [NSLocalizedDescriptionKey: error.localizedDescription])
+        }
     }
 
     /// Liệt kê các file backup đã lưu trong thư mục.

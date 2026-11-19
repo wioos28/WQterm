@@ -41,17 +41,39 @@ final class FeedbackManager {
         let zipName = "WQTerm_BetaFeedback_\(ISO8601DateFormatter().string(from: Date()).replacingOccurrences(of: ":", with: "-")).zip"
         let zipURL = reportsDirectory.deletingLastPathComponent().appendingPathComponent(zipName, isDirectory: false)
 
-        // Stub nén zip: trên Xcode thực tế sẽ dùng ZIPFoundation / Process gọi zip.
-        // Ở đây tạo file placeholder chứa danh sách báo cáo để illustrate.
         let reportFolders = (try? fileManager.contentsOfDirectory(at: reportsDirectory, includingPropertiesForKeys: nil, options: [])) ?? []
-        var manifest = "WQTerm Beta Feedback Export\n\n"
-        for folder in reportFolders {
-            manifest += "- \(folder.lastPathComponent)\n"
-        }
-        try? manifest.data(using: .utf8)?.write(to: zipURL, options: .atomic)
+        guard !reportFolders.isEmpty else { return nil }
 
-        BetaFeedbackLog.system("Xuất file zip báo cáo lỗi: \(zipURL.path)")
-        return zipURL
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/zip")
+        // zip -r <output.zip> <folder1> <folder2> ...
+        var args = ["-r", zipURL.path]
+        for folder in reportFolders {
+            args.append(folder.path)
+        }
+        process.arguments = args
+        process.currentDirectoryURL = reportsDirectory.deletingLastPathComponent()
+
+        let errorPipe = Pipe()
+        process.standardError = errorPipe
+
+        do {
+            try process.run()
+            process.waitUntilExit()
+
+            if process.terminationStatus == 0 {
+                BetaFeedbackLog.system("Xuất file zip báo cáo lỗi: \(zipURL.path)")
+                return zipURL
+            } else {
+                let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+                let errorMsg = String(data: errorData, encoding: .utf8) ?? "Lỗi nén zip không xác định (mã \(process.terminationStatus))"
+                BetaFeedbackLog.system("Lỗi nén zip: \(errorMsg)")
+                return nil
+            }
+        } catch {
+            BetaFeedbackLog.system("Lỗi nén zip: \(error.localizedDescription)")
+            return nil
+        }
     }
 
     /// Lấy UIViewController root hiện tại để present UIActivityViewController.

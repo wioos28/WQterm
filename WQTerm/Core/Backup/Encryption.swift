@@ -1,4 +1,5 @@
 import Foundation
+import Security
 import CryptoKit
 
 /// Encryption cho backup: CryptoKit AES-GCM, key lưu Keychain (PRD Module 3).

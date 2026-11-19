@@ -19,7 +19,36 @@ final class CodexAdapter: AICLIAdapter {
         }
         var fullEnv = env
         fullEnv["OPENAI_API_KEY"] = key
-        let cmd = [binaryRelativePath] + arguments
-        return ("[stub] codex \(cmd.joined(separator: " "))", nil)
+        // Thực thi qua Node.js runtime
+        let nodeRuntime = RuntimeManager.shared.binaryURL(for: .node)
+        guard let nodePath = nodeRuntime?.path else {
+            return ("", "Node.js runtime không tìm thấy. Vui lòng cài đặt node-ios-arm64 trong Resources.")
+        }
+        let cliPath = Bundle.main.bundleURL.appendingPathComponent(binaryRelativePath).path
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: nodePath)
+        process.arguments = [cliPath] + arguments
+        process.environment = fullEnv
+
+        let stdoutPipe = Pipe()
+        let stderrPipe = Pipe()
+        process.standardOutput = stdoutPipe
+        process.standardError = stderrPipe
+
+        do {
+            try process.run()
+            process.waitUntilExit()
+            let stdoutData = stdoutPipe.fileHandleForReading.readDataToEndOfFile()
+            let stderrData = stderrPipe.fileHandleForReading.readDataToEndOfFile()
+            let output = String(data: stdoutData, encoding: .utf8) ?? ""
+            let errorOutput = String(data: stderrData, encoding: .utf8) ?? ""
+            if process.terminationStatus == 0 {
+                return (output, errorOutput.isEmpty ? nil : errorOutput)
+            } else {
+                return (output, errorOutput.isEmpty ? "Codex CLI thoát với mã \(process.terminationStatus)" : errorOutput)
+            }
+        } catch {
+            return ("", "Không thể thực thi Codex CLI: \(error.localizedDescription)")
+        }
     }
 }
