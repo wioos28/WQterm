@@ -6,36 +6,69 @@ workflows:
     environment:
       xcode: latest
     scripts:
-      - name: Verify Xcode project exists
+      - name: Locate Xcode project (.xcodeproj or .xcworkspace)
         script: |
-          if [ ! -d "WQTerm.xcodeproj" ]; then
-            echo "ERROR: WQTerm.xcodeproj not found at repository root."
+          PROJECT_PATH=$(find . -maxdepth 4 \( -name "*.xcodeproj" -o -name "*.xcworkspace" \) 2>/dev/null | head -n 1)
+          if [ -z "$PROJECT_PATH" ]; then
+            echo "ERROR: No .xcodeproj or .xcworkspace found in repository."
             echo "Please create the Xcode project on macOS following PROJECT_SETUP.md"
             echo "and commit it to the repository before running this pipeline."
             exit 1
           fi
+          echo "Found Xcode project: $PROJECT_PATH"
+          echo "PROJECT_PATH=$PROJECT_PATH" >> "$CM_ENV"
+
+      - name: List available schemes (debug)
+        script: |
+          PROJECT_PATH=$(grep '^PROJECT_PATH=' "$CM_ENV" | cut -d'=' -f2-)
+          if [[ "$PROJECT_PATH" == *.xcworkspace ]]; then
+            xcodebuild -workspace "$PROJECT_PATH" -list
+          else
+            xcodebuild -project "$PROJECT_PATH" -list
+          fi
+
       - name: Set up Xcode
         script: |
           sudo xcode-select -switch /Applications/Xcode.app
           xcodebuild -version
+
       - name: Build unsigned archive
         script: |
-          xcodebuild \
-            -project WQTerm.xcodeproj \
-            -scheme WQTerm \
-            -configuration Release \
-            -sdk iphoneos \
-            -destination generic/platform=iOS \
-            -archivePath build/WQTerm.xcarchive \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO \
-            ONLY_ACTIVE_ARCH=NO \
-            archive
+          PROJECT_PATH=$(grep '^PROJECT_PATH=' "$CM_ENV" | cut -d'=' -f2-)
+          if [[ "$PROJECT_PATH" == *.xcworkspace ]]; then
+            xcodebuild \
+              -workspace "$PROJECT_PATH" \
+              -scheme WQTerm \
+              -configuration Release \
+              -sdk iphoneos \
+              -destination generic/platform=iOS \
+              -archivePath build/WQTerm.xcarchive \
+              CODE_SIGN_IDENTITY="" \
+              CODE_SIGNING_REQUIRED=NO \
+              CODE_SIGNING_ALLOWED=NO \
+              ONLY_ACTIVE_ARCH=NO \
+              archive
+          else
+            xcodebuild \
+              -project "$PROJECT_PATH" \
+              -scheme WQTerm \
+              -configuration Release \
+              -sdk iphoneos \
+              -destination generic/platform=iOS \
+              -archivePath build/WQTerm.xcarchive \
+              CODE_SIGN_IDENTITY="" \
+              CODE_SIGNING_REQUIRED=NO \
+              CODE_SIGNING_ALLOWED=NO \
+              ONLY_ACTIVE_ARCH=NO \
+              archive
+          fi
+
       - name: Package IPA
         script: |
           mkdir -p build/Payload
           cp -R build/WQTerm.xcarchive/Products/Applications/WQTerm.app build/Payload/
           cd build && zip -r WQTerm.ipa Payload
+
     artifacts:
       - build/WQTerm.ipa
+
