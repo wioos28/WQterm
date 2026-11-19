@@ -15,7 +15,14 @@ struct WQTermApp: App {
                     OnboardingView { showOnboarding = false }
                 } else {
                     ZStack {
-                        MainTabView()
+                        TabView {
+                            TerminalView()
+                                .tabItem { Label("Terminal", systemImage: "terminal") }
+                            Text("Sandbox (M2)").tabItem { Label("Sandbox", systemImage: "externaldrive") }
+                            Text("Backup (M3)").tabItem { Label("Backup", systemImage: "externaldrive") }
+                            Text("AI (M4/M9)").tabItem { Label("AI", systemImage: "sparkles") }
+                            Text("Cài đặt (M6)").tabItem { Label("Cài đặt", systemImage: "gear") }
+                        }
                         // Nút feedback nổi ở góc phải dưới màn hình
                         VStack {
                             Spacer()
@@ -50,26 +57,8 @@ enum OnboardingStorage {
     }
 }
 
-// MARK: - Placeholder views (to be replaced by real UI modules)
+// MARK: - Onboarding view (chưa có file riêng, giữ tạm ở đây)
 
-struct MainTabView: View {
-    var body: some View {
-        TabView {
-            TerminalView().tabItem { Label("Terminal", systemImage: "terminal") }
-            SandboxListView().tabItem { Label("Sandbox", systemImage: "externaldrive") }
-            BackupListView().tabItem { Label("Backup", systemImage: "externaldrive") }
-            AICLISettingsView().tabItem { Label("AI", systemImage: "sparkles") }
-            SettingsView().tabItem { Label("Settings", systemImage: "gear") }
-        }
-    }
-}
-
-struct TerminalView: View { var body: some View { Text("Terminal Core (M1)") } }
-struct SandboxListView: View { var body: some View { Text("Sandbox List (M2/M6)") } }
-struct BackupListView: View { var body: some View { Text("Backup List (M3)") } }
-struct AICLISettingsView: View { var body: some View { Text("AI CLI Settings (M4/M9)") } }
-struct SettingsView: View { var body: some View { Text("Settings (M6)") } }
-struct LockView: View { var body: some View { Text("Face ID Lock (M6)") } }
 struct OnboardingView: View {
     let onAgree: () -> Void
     var body: some View {

@@ -22,8 +22,13 @@ final class ContainerArchiver {
         return destination
     }
 
-    /// Liệt kê các file backup đã lưu.
+    /// Liệt kê các file backup đã lưu trong thư mục.
     func listBackups(in directory: URL) -> [URL] {
         (try? fileManager.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil, options: [])) ?? []
+    }
+
+    /// Xóa một file backup cũ.
+    func deleteBackup(at url: URL) {
+        try? fileManager.removeItem(at: url)
     }
 }

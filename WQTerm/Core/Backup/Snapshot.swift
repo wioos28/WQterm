@@ -12,7 +12,6 @@ final class SnapshotManager {
 
     /// Tạo snapshot write-ahead cho file sẽ bị ghi đè bởi lệnh.
     func createWriteAheadSnapshot(for command: String, cwd: String) {
-        // Phân tích đơn giản: trích xuất đường dẫn file từ lệnh (>, >>, rm, mv, cp, sed -i, tee)
         guard let targetPath = extractTargetPath(from: command, cwd: cwd) else { return }
         let targetURL = URL(fileURLWithPath: targetPath)
         guard fileManager.fileExists(atPath: targetURL.path) else { return }
@@ -34,8 +33,23 @@ final class SnapshotManager {
         }
     }
 
+    /// Liệt kê tất cả thư mục snapshot đã lưu (mới nhất trước).
+    func listSnapshots() -> [URL] {
+        let docs = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let base = docs.appendingPathComponent(".terminal/backups/snapshots", isDirectory: true)
+        guard let urls = try? fileManager.contentsOfDirectory(at: base, includingPropertiesForKeys: [.contentModificationDateKey], options: []) else { return [] }
+        return urls.sorted {
+            (try? $0.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate ?? .distantPast >
+            (try? $1.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate ?? .distantPast
+        }
+    }
+
+    /// Xóa một snapshot cụ thể.
+    func deleteSnapshot(at url: URL) {
+        try? fileManager.removeItem(at: url)
+    }
+
     private func extractTargetPath(from command: String, cwd: String) -> String? {
-        // Heuristic đơn giản: lấy token cuối cùng trông như đường dẫn
         let tokens = command.split(separator: " ", omittingEmptySubsequences: true)
         guard let last = tokens.last else { return nil }
         var path = String(last)
@@ -56,7 +70,6 @@ final class SnapshotManager {
     }
 
     private func enforceTotalSizeLimit() {
-        // Tính tổng size snapshots, xóa thư mục cũ nhất nếu vượt 2GB
         let docs = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let base = docs.appendingPathComponent(".terminal/backups/snapshots", isDirectory: true)
         guard let urls = try? fileManager.contentsOfDirectory(at: base, includingPropertiesForKeys: [.contentModificationDateKey], options: []) else { return }
@@ -71,8 +84,9 @@ final class SnapshotManager {
         var sortedAsc = sorted.reversed() // cũ nhất trước
         var idx = 0
         while total > maxTotalBytes, idx < sortedAsc.count {
+            let size = (try? sortedAsc[idx].resourceValues(forKeys: [.fileSizeKey]))?.fileSize ?? 0
             try? fileManager.removeItem(at: sortedAsc[idx])
-            total -= (try? sortedAsc[idx].resourceValues(forKeys: [.fileSizeKey]))?.fileSize ?? 0
+            total -= size
             idx += 1
         }
     }

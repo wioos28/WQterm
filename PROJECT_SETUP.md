@@ -8,24 +8,24 @@ Môi trường scaffold hiện tại (Linux) chỉ chứa mã nguồn Swift + c�
 3. Bundle Identifier: `com.wqterm.app`
 4. Interface: **SwiftUI**, Language: **Swift**
 5. Deployment Target: **iOS 26.0** (hỗ trợ iOS 26.0–27.3 Beta 1 theo PRD)
-6. Lưu vào thư mục `/workspaces/WQterm` (tạo thư mục `WQTerm.xcodeproj`).
+6. Lưu file project vào thư mục gốc repo (cùng cấp với `codemagic.yaml` và `README.md`), tạo thư mục `WQTerm.xcodeproj`.
 
 ## Bước 2: Thêm toàn bộ mã nguồn đã scaffold
-Kéo các thư mục sau vào Xcode project (hãy chọn "Copy items if needed" = OFF vì file đã nằm trong repo):
+Kéo các thư mục sau vào Xcode project (chọn **"Copy items if needed" = OFF** vì file đã nằm trong repo):
 - `WQTerm/App/`
-- `WQTerm/Core/` (Shell, Exploit, Backup, Runtimes, AICLI, Preview, Pairing, Security, Automation)
+- `WQTerm/Core/` (Shell, Exploit, Backup, Runtimes, AICLI, Preview, Pairing, Security, Automation, BetaFeedback)
 - `WQTerm/UI/` (Terminal, Sandbox, Backup, AICLI, Preview, Settings, Components)
 - `WQTerm/Resources/`
 - `WQTerm/Info.plist`, `WQTerm/Localizable.strings`, `WQTerm/LICENSE`
 
 ## Bước 3: Cấu hình Signing & Capabilities (BẮT BUỘC)
 Trong Xcode → Target WQTerm → **Signing & Capabilities**:
-1. Bật **App Groups** → thêm `group.com.wqterm.app` (tự sinh `WQTerm.entitlements`).
+1. Bật **App Groups** → thêm `group.com.wqterm.app` (tự sinh/cập nhật `WQTerm.entitlements`).
    - Giải thích (PRD 7.1): App Group bắt buộc để `worse_query` hoạt động. Người dùng phải ký với entitlement này qua SideStore/AltStore (KHÔNG dùng Sideloadly).
-2. Bật **Background Modes** → chọn **Processing** (UIBackgroundModes processing).
+2. Bật **Background Modes** → chọn **Processing** (`UIBackgroundModes` processing).
 3. Kiểm tra `get-task-allow = true` (cần cho StikDebug bật JIT).
 
-File `WQTerm/WQTerm.entitlements` đã được scaffold sẵn (xem nội dung), hãy xác nhận Xcode sử dụng nó.
+File `WQTerm/WQTerm.entitlements` đã được scaffold sẵn, hãy xác nhận Xcode sử dụng nó.
 
 ## Bước 4: Thêm Info.plist rights
 Xác nhận `Info.plist` có các key theo PRD 7.2:
@@ -37,8 +37,8 @@ Xác nhận `Info.plist` có các key theo PRD 7.2:
 - `LSSupportsOpeningDocumentsInPlace = true`
 - `UIBackgroundModes = ["processing"]`
 
-## Bước 5: Build và xuất IPA không ký (CI)
-Sử dụng `.github/workflows/build.yml` (đã scaffold). Xcode command:
+## Bước 5: Build và xuất IPA không ký (CI/Codemagic)
+Sử dụng `codemagic.yaml` (đã cấu hình) hoặc GitHub Actions `.github/workflows/build.yml`. Xcode command:
 ```
 xcodebuild -project WQTerm.xcodeproj -scheme WQTerm -configuration Release \
   -sdk iphoneos -destination generic/platform=iOS \
@@ -55,3 +55,4 @@ Sau đó gói `Payload/WQTerm.app` thành `WQTerm.ipa`.
 ## Ghi hạn chế
 - Swift không có sẵn trên máy scaffold Linux → chưa biên dịch kiểm thử locally.
 - Các hàm private iOS (ví dụ `sandbox_extension_issue_file`) được đánh dấu stub; sẽ triển khai đầy đủ khi build trên Xcode SDK iOS.
+- `CommandExecutor` hiện dùng `Process` với `/bin/sh` — trên iOS thực tế cần link với `ios_system` (a-Shell fork) để chạy các lệnh Unix native.
