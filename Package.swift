@@ -7,11 +7,18 @@ let package = Package(
     products: [
         .library(name: "WQTermCore", targets: ["WQTermCore"])
     ],
+    dependencies: [],
     targets: [
         .target(
             name: "WQTermCore",
             path: "WQTerm",
-            exclude: ["Info.plist", "WQTerm.entitlements", "Localizable.strings", "Assets.xcassets"],
+            exclude: [
+                "Info.plist",
+                "WQTerm.entitlements",
+                "Localizable.strings",
+                "Assets.xcassets",
+                "App/AppDelegate.swift"
+            ],
             resources: [
                 .copy("Resources/ios_system"),
                 .copy("Resources/node-ios-arm64"),
@@ -21,3 +28,4 @@ let package = Package(
         )
     ]
 )
+
