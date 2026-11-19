@@ -1,0 +1,33 @@
+workflows:
+  build-wqterm-ipa:
+    name: Build WQTerm IPA (unsigned)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      xcode: latest
+    scripts:
+      - name: Set up Xcode
+        script: |
+          sudo xcode-select -switch /Applications/Xcode.app
+          xcodebuild -version
+      - name: Build unsigned archive
+        script: |
+          xcodebuild \
+            -project WQTerm.xcodeproj \
+            -scheme WQTerm \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination generic/platform=iOS \
+            -archivePath build/WQTerm.xcarchive \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            ONLY_ACTIVE_ARCH=NO \
+            archive
+      - name: Package IPA
+        script: |
+          mkdir -p build/Payload
+          cp -R build/WQTerm.xcarchive/Products/Applications/WQTerm.app build/Payload/
+          cd build && zip -r WQTerm.ipa Payload
+    artifacts:
+      - build/WQTerm.ipa
