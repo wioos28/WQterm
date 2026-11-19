@@ -1,16 +1,20 @@
 # Xcode
 .build/
 DerivedData/
-*.xcodeproj/*
-*.xcworkspace/*
 *.xcuserstate
 *.xccheckout
 *.xcblueprint
 *.xcmakeoptions
 *.xctestplan
-*.xcodeproj/project.xcworkspace/
-*.xcodeproj/xcshareddata/
-*.xcodeproj/xcuserdata/
+*.DS_Store
+*.swp
+*.swo
+
+# Xcode project - keep project.pbxproj and schemes, ignore user data
+!WQTerm.xcodeproj/project.pbxproj
+!WQTerm.xcodeproj/xcshareddata/xcschemes/
+WQTerm.xcodeproj/xcuserdata/
+WQTerm.xcodeproj/project.xcworkspace/xcuserdata/
 
 # Swift Package Manager
 .build/
@@ -34,12 +38,8 @@ fastlane/Preview.html
 fastlane/screenshots
 fastlane/test_output
 
-# macOS
-.DS_Store
-*.swp
-*.swo
-
 # WQTerm specific
 WQTerm/.terminal/
 .wqterm-config.zip
 BetaFeedback/Reports/
+
